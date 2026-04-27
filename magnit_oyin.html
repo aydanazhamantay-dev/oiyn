@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Магнит өрісі — Деңгейлік ойын | 8-сынып Физика</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1c2333;
+    --border: rgba(255,255,255,0.08);
+    --text: #e2e8f0;
+    --text2: #8896aa;
+    --blue: #60a5fa;
+    --teal: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --green: #4ade80;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; min-height: 100vh; }
+
+  .game-wrap { max-width: 700px; margin: 0 auto; padding: 20px; }
+
+  /* HEADER */
+  .game-header { background: linear-gradient(135deg, #111827, #1a1040); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .game-title { font-size: 16px; font-weight: 800; }
+  .game-title span { color: var(--amber); }
+  .score-wrap { display: flex; gap: 12px; align-items: center; }
+  .score-pill { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 5px 14px; font-size: 13px; font-weight: 700; }
+
+  /* LEVEL BAR */
+  .level-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .level-dot { flex: 1; height: 6px; border-radius: 3px; background: var(--surface2); transition: background 0.3s; }
+  .level-dot.done { background: var(--teal); }
+  .level-dot.active { background: var(--amber); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* START */
+  .start-card { background: linear-gradient(135deg, #111827, #1a1535); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; text-align: center; }
+  .start-card h1 { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+  .start-card h1 span { color: var(--amber); }
+  .start-card p { color: var(--text2); font-size: 15px; margin-bottom: 24px; line-height: 1.7; }
+  .level-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; text-align: left; }
+  .level-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; }
+  .level-item .li-num { font-size: 11px; color: var(--text2); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+  .level-item .li-name { font-weight: 700; }
+
+  /* QUESTION */
+  .q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 14px; }
+  .q-level-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 14px; }
+  .badge-1 { background: rgba(52,211,153,0.15); color: var(--teal); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-2 { background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+  .badge-3 { background: rgba(251,191,36,0.15); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .badge-4 { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .badge-5 { background: rgba(167,139,250,0.15); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+
+  .q-text { font-size: 17px; font-weight: 700; line-height: 1.6; margin-bottom: 20px; }
+  .q-visual { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px; text-align: center; }
+  .q-visual canvas { display: block; margin: 0 auto; border-radius: 6px; }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media(max-width:500px){ .options { grid-template-columns: 1fr; } }
+  .opt-btn { padding: 13px 16px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; text-align: left; transition: all 0.2s; line-height: 1.4; }
+  .opt-btn:hover:not(:disabled) { border-color: var(--blue); background: rgba(96,165,250,0.08); }
+  .opt-btn.correct { background: rgba(52,211,153,0.15); border-color: var(--teal); color: var(--teal); }
+  .opt-btn.wrong { background: rgba(248,113,113,0.12); border-color: var(--red); color: var(--red); }
+  .opt-btn:disabled { cursor: default; }
+
+  /* TASK */
+  .task-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 14px; }
+  .task-desc { font-size: 15px; line-height: 1.7; color: var(--text2); margin-bottom: 16px; }
+  .task-desc strong { color: var(--text); }
+  .task-input-wrap { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .task-input { flex: 1; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; padding: 10px 14px; }
+  .task-input:focus { outline: none; border-color: var(--blue); }
+  .task-unit { font-size: 14px; color: var(--text2); font-weight: 700; }
+  .check-btn { width: 100%; padding: 12px; background: var(--blue); color: #fff; border: none; border-radius: var(--radius-sm); font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+  .check-btn:hover { opacity: 0.9; }
+  .check-btn:disabled { opacity: 0.5; cursor: default; }
+
+  /* FEEDBACK */
+  .feedback { padding: 14px 18px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; line-height: 1.6; margin-top: 12px; }
+  .feedback.correct { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: var(--teal); }
+  .feedback.wrong { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); color: var(--red); }
+  .feedback.hint { background: rgba(251,191,36,0.10); border: 1px solid rgba(251,191,36,0.3); color: var(--amber); }
+
+  /* NAV */
+  .nav-btn { width: 100%; padding: 13px; background: linear-gradient(90deg, #1d4ed8, #7c3aed); color: #fff; border: none; border-radius: var(--radius-sm); font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; letter-spacing: 0.5px; }
+  .nav-btn:hover { opacity: 0.92; }
+
+  /* RESULT */
+  .result-card { background: linear-gradient(135deg, #111827, #1a1040); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; text-align: center; }
+  .result-emoji { font-size: 56px; margin-bottom: 12px; }
+  .result-title { font-size: 24px; font-weight: 900; margin-bottom: 8px; }
+  .result-score { font-size: 48px; font-weight: 900; color: var(--amber); margin: 12px 0; }
+  .result-msg { font-size: 15px; color: var(--text2); margin-bottom: 24px; line-height: 1.7; }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .result-stat { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px; }
+  .result-stat .rs-l { font-size: 11px; color: var(--text2); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+  .result-stat .rs-v { font-size: 20px; font-weight: 800; }
+  .restart-btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #059669, #0d9488); color: #fff; border: none; border-radius: var(--radius-sm); font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="game-wrap">
+
+  <div class="game-header">
+    <div class="game-title">⚡ Магнит өрісі <span>ОЙЫН</span></div>
+    <div class="score-wrap">
+      <div class="score-pill">⭐ <span id="score">0</span> ұпай</div>
+      <div class="score-pill">❤️ <span id="lives">3</span></div>
+    </div>
+  </div>
+
+  <div class="level-bar" id="level-bar"></div>
+
+  <!-- START -->
+  <div class="screen active" id="screen-start">
+    <div class="start-card">
+      <h1>🧲 Магнит өрісі <span>ОЙЫНЫ</span></h1>
+      <p>Магнит өрісінің тогы бар өткізгішке әсері, электрқозғалтқыштар және өлшеуіш аспаптар туралы 5 деңгейлік ойын!</p>
+      <div class="level-list">
+        <div class="level-item"><div class="li-num">🟢 1-деңгей</div><div class="li-name">Негізгі ұғымдар</div></div>
+        <div class="level-item"><div class="li-num">🔵 2-деңгей</div><div class="li-name">Ампер күші</div></div>
+        <div class="level-item"><div class="li-num">🟡 3-деңгей</div><div class="li-name">Есеп шығару</div></div>
+        <div class="level-item"><div class="li-num">🔴 4-деңгей</div><div class="li-name">Қозғалтқыш & аспаптар</div></div>
+        <div class="level-item"><div class="li-num">🟣 5-деңгей</div><div class="li-name">Сынақ</div></div>
+      </div>
+      <button class="nav-btn" onclick="startGame()">🚀 Ойынды бастау</button>
+    </div>
+  </div>
+
+  <!-- QUESTION -->
+  <div class="screen" id="screen-question">
+    <div class="q-card">
+      <span class="q-level-badge" id="q-badge">1-деңгей</span>
+      <div class="q-text" id="q-text"></div>
+      <div class="q-visual" id="q-visual" style="display:none;"><canvas id="q-canvas" width="340" height="140"></canvas></div>
+      <div class="options" id="q-options"></div>
+      <div class="feedback" id="q-feedback" style="display:none;"></div>
+    </div>
+    <button class="nav-btn" id="next-btn" style="display:none;" onclick="nextQuestion()">Келесі →</button>
+  </div>
+
+  <!-- TASK -->
+  <div class="screen" id="screen-task">
+    <div class="task-card">
+      <span class="q-level-badge" id="task-badge">3-деңгей</span>
+      <div class="q-text" id="task-title"></div>
+      <div class="task-desc" id="task-desc"></div>
+      <div class="q-visual" id="task-visual" style="display:none;"><canvas id="task-canvas" width="340" height="120"></canvas></div>
+      <div class="task-input-wrap">
+        <input type="number" class="task-input" id="task-input" placeholder="Жауабыңызды енгізіңіз...">
+        <span class="task-unit" id="task-unit">Н</span>
+      </div>
+      <div style="font-size:12px; color:var(--text2); margin-bottom:8px;" id="task-hint"></div>
+      <button class="check-btn" onclick="checkTask()">✅ Тексеру</button>
+      <div class="feedback" id="task-feedback" style="display:none;"></div>
+    </div>
+    <button class="nav-btn" id="task-next-btn" style="display:none;" onclick="nextQuestion()">Келесі →</button>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="screen-result">
+    <div class="result-card">
+      <div class="result-emoji" id="result-emoji">🏆</div>
+      <div class="result-title" id="result-title">Керемет!</div>
+      <div class="result-score" id="result-score">0</div>
+      <div style="font-size:14px; color:var(--text2); margin-bottom:8px;">ұпай</div>
+      <div class="result-msg" id="result-msg"></div>
+      <div class="result-grid">
+        <div class="result-stat"><div class="rs-l">Дұрыс</div><div class="rs-v" style="color:var(--teal);" id="r-correct">0</div></div>
+        <div class="result-stat"><div class="rs-l">Қате</div><div class="rs-v" style="color:var(--red);" id="r-wrong">0</div></div>
+        <div class="result-stat"><div class="rs-l">Деңгей</div><div class="rs-v" style="color:var(--amber);" id="r-level">5/5</div></div>
+      </div>
+      <button class="restart-btn" onclick="restartGame()">🔄 Қайта ойнау</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  // LEVEL 1 — Негізгі ұғымдар
+  { level:1, type:'quiz', text:'Магнит өрісі тогы бар өткізгішке қандай күш әсер етеді?', options:['Ампер күші','Архимед күші','Ньютон күші','Кулон күші'], answer:0, explain:'Магнит өрісіндегі тогы бар өткізгішке әсер ететін күш — Ампер күші деп аталады.' },
+  { level:1, type:'quiz', text:'Ампер күшінің бағытын анықтайтын ереже қайсы?', options:['Сол қол ережесі','Оң қол ережесі','Бұранда ережесі','Флеминг ережесі'], answer:0, explain:'Сол қол ережесі: сол қолды өткізгіштегі ток бағытына қарай орналастырсаңыз, саусақтар Ампер күшінің бағытын көрсетеді.' },
+  { level:1, type:'quiz', text:'Тогы бар өткізгіш магнит өрісіне параллель орналасса, Ампер күші қандай болады?', options:['Нөлге тең','Максимал болады','Өзгермейді','Екі есе артады'], answer:0, explain:'Өткізгіш магнит индукция сызықтарына параллель болса, F = BIL·sin(0°) = 0.' },
+
+  // LEVEL 2 — Ампер күші
+  { level:2, type:'quiz', text:'F = BIL формуласында L нені білдіреді?', options:['Өткізгіш ұзындығы','Магнит индукциясы','Ток күші','Кедергі'], answer:0, explain:'L — магнит өрісіндегі өткізгіштің жұмысшы ұзындығы (метрмен өлшенеді).' },
+  { level:2, type:'quiz', text:'Магнит индукциясы B өлшем бірлігі қайсы?', options:['Тесла (Тл)','Ампер (А)','Ньютон (Н)','Вольт (В)'], answer:0, explain:'Магнит индукциясы B Тесла (Тл) өлшем бірлігімен өлшенеді. 1 Тл = 1 Н/(А·м).' },
+  { level:2, type:'quiz', text:'Ампер күші максимал болу үшін өткізгіш магнит индукция сызықтарына қалай орналасуы керек?', options:['Перпендикуляр (90°)','Параллель (0°)','45° бұрышта','Бұрышы маңызды емес'], answer:0, explain:'F = BIL·sin(α). α = 90° болғанда sin(90°) = 1, яғни күш максимал болады.' },
+
+  // LEVEL 3 — Есеп шығару
+  { level:3, type:'task', title:'Есеп: Ампер күші', desc:'Ток күші <strong>I = 5 А</strong>, өткізгіш ұзындығы <strong>L = 0.2 м</strong>, магнит индукциясы <strong>B = 0.3 Тл</strong>. Өткізгіш өріске перпендикуляр. Ампер күшін табыңыз.', hint:'F = B·I·L·sin(90°) = B·I·L', answer:0.3, unit:'Н', tolerance:0.05, explain:'F = B·I·L = 0.3 × 5 × 0.2 = 0.3 Н' },
+  { level:3, type:'task', title:'Есеп: Ток күшін табу', desc:'Ампер күші <strong>F = 2 Н</strong>, магнит индукциясы <strong>B = 0.5 Тл</strong>, өткізгіш ұзындығы <strong>L = 0.4 м</strong>. Ток күшін табыңыз.', hint:'I = F / (B·L)', answer:10, unit:'А', tolerance:0.5, explain:'I = F/(B·L) = 2/(0.5×0.4) = 10 А' },
+
+  // LEVEL 4 — Қозғалтқыш & аспаптар
+  { level:4, type:'quiz', text:'Электрқозғалтқыштың жұмыс принципі неге негізделген?', options:['Магнит өрісінің тогы бар рамкаға әсері','Джоуль-Ленц заңына','Фарадей заңына','Ом заңына'], answer:0, explain:'Электрқозғалтқыш — тогы бар рамкаға магнит өрісінің Ампер күші арқылы айналдыру моментін туғызу принципіне негізделген.' },
+  { level:4, type:'quiz', text:'Гальванометр нені өлшейді?', options:['Кішкентай ток күшін','Кернеуді','Кедергіні','Қуатты'], answer:0, explain:'Гальванометр — кішкентай ток күштерін анықтауға арналған өлшеуіш аспап. Ампер күшінің принципіне негізделген.' },
+  { level:4, type:'quiz', text:'Электрқозғалтқыш электр энергиясын нені айналдырады?', options:['Механикалық энергияға','Жылу энергиясына','Жарық энергиясына','Химиялық энергияға'], answer:0, explain:'Электрқозғалтқыш — электр энергиясын механикалық энергияға айналдыратын аспап.' },
+
+  // LEVEL 5 — Сынақ
+  { level:5, type:'quiz', text:'Тогы бар өткізгіш магнит өрісінен шыққан кезде оған Ампер күші...', options:['Әсер етпейді','Максимал болады','Азаяды','Бағытын өзгертеді'], answer:0, explain:'Магнит өрісінен тыс жерде Ампер күші нөлге тең, өйткені B = 0.' },
+  { level:5, type:'task', title:'Сынақ есеп: Электрқозғалтқыш', desc:'Электрқозғалтқыштың рамкасындағы ток <strong>I = 3 А</strong>, рамка өлшемі ұзындығы бойынша <strong>L = 0.1 м</strong>, магнит индукциясы <strong>B = 0.4 Тл</strong>. Рамканың бір жағына әсер ететін Ампер күшін табыңыз.', hint:'F = B·I·L', answer:0.12, unit:'Н', tolerance:0.01, explain:'F = B·I·L = 0.4 × 3 × 0.1 = 0.12 Н' },
+  { level:5, type:'quiz', text:'Амперметр тізбекке қалай қосылады?', options:['Тізбектей (последовательно)','Параллель','Аралас','Маңызды емес'], answer:0, explain:'Амперметр тізбекке тізбектей қосылады, өйткені ток тура өзі арқылы өтуі керек.' },
+];
+
+let current = 0, score = 0, lives = 3, correctCount = 0, wrongCount = 0;
+const TOTAL = questions.length;
+
+function buildLevelBar() {
+  const bar = document.getElementById('level-bar');
+  bar.innerHTML = '';
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'level-dot' + (i < current ? ' done' : i === current ? ' active' : '');
+    bar.appendChild(d);
+  }
+}
+
+function startGame() {
+  current = 0; score = 0; lives = 3; correctCount = 0; wrongCount = 0;
+  updateHUD();
+  showQuestion();
+}
+
+function updateHUD() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('lives').textContent = '❤️'.repeat(lives);
+  buildLevelBar();
+}
+
+function showQuestion() {
+  if (current >= TOTAL) { showResult(); return; }
+  const q = questions[current];
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+  if (q.type === 'quiz') {
+    document.getElementById('screen-question').classList.add('active');
+    const badges = ['','badge-1','badge-2','badge-3','badge-4','badge-5'];
+    const levelNames = ['','🟢 1-деңгей: Негізгі ұғымдар','🔵 2-деңгей: Ампер күші','🟡 3-деңгей: Есеп','🔴 4-деңгей: Қозғалтқыш','🟣 5-деңгей: Сынақ'];
+    document.getElementById('q-badge').className = 'q-level-badge ' + badges[q.level];
+    document.getElementById('q-badge').textContent = levelNames[q.level];
+    document.getElementById('q-text').textContent = q.text;
+    document.getElementById('q-feedback').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+    document.getElementById('q-visual').style.display = 'none';
+
+    const opts = document.getElementById('q-options');
+    opts.innerHTML = '';
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.textContent = opt;
+      btn.onclick = () => answerQuiz(i, q);
+      opts.appendChild(btn);
+    });
+
+    if (q.visual) { document.getElementById('q-visual').style.display='block'; drawQuizVisual(q.visual); }
+  } else {
+    document.getElementById('screen-task').classList.add('active');
+    const badges = ['','badge-1','badge-2','badge-3','badge-4','badge-5'];
+    const levelNames = ['','🟢 1-деңгей','🔵 2-деңгей','🟡 3-деңгей: Есеп шығару','🔴 4-деңгей','🟣 5-деңгей: Сынақ'];
+    document.getElementById('task-badge').className = 'q-level-badge ' + badges[q.level];
+    document.getElementById('task-badge').textContent = levelNames[q.level];
+    document.getElementById('task-title').textContent = q.title;
+    document.getElementById('task-desc').innerHTML = q.desc;
+    document.getElementById('task-hint').textContent = '💡 Формула: ' + q.hint;
+    document.getElementById('task-unit').textContent = q.unit;
+    document.getElementById('task-input').value = '';
+    document.getElementById('task-input').disabled = false;
+    document.querySelector('.check-btn').disabled = false;
+    document.getElementById('task-feedback').style.display = 'none';
+    document.getElementById('task-next-btn').style.display = 'none';
+    document.getElementById('task-visual').style.display = 'none';
+  }
+  updateHUD();
+}
+
+function answerQuiz(i, q) {
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b => b.disabled = true);
+  const fb = document.getElementById('q-feedback');
+  fb.style.display = 'block';
+
+  if (i === q.answer) {
+    btns[i].className = 'opt-btn correct';
+    fb.className = 'feedback correct';
+    fb.innerHTML = '✅ Дұрыс! ' + q.explain;
+    score += q.level * 10;
+    correctCount++;
+    showConfetti();
+  } else {
+    btns[i].className = 'opt-btn wrong';
+    btns[q.answer].className = 'opt-btn correct';
+    fb.className = 'feedback wrong';
+    fb.innerHTML = '❌ Қате. Дұрыс жауап: <strong>' + q.options[q.answer] + '</strong>. ' + q.explain;
+    lives--;
+    wrongCount++;
+    if (lives <= 0) { setTimeout(showResult, 1500); return; }
+  }
+  document.getElementById('next-btn').style.display = 'block';
+  updateHUD();
+}
+
+function checkTask() {
+  const q = questions[current];
+  const val = parseFloat(document.getElementById('task-input').value);
+  const fb = document.getElementById('task-feedback');
+  fb.style.display = 'block';
+  document.getElementById('task-input').disabled = true;
+  document.querySelector('.check-btn').disabled = true;
+
+  if (isNaN(val)) {
+    fb.className = 'feedback hint';
+    fb.innerHTML = '⚠️ Санды енгізіңіз!';
+    document.getElementById('task-input').disabled = false;
+    document.querySelector('.check-btn').disabled = false;
+    return;
+  }
+
+  if (Math.abs(val - q.answer) <= q.tolerance) {
+    fb.className = 'feedback correct';
+    fb.innerHTML = '✅ Дұрыс! ' + q.explain;
+    score += q.level * 15;
+    correctCount++;
+    showConfetti();
+  } else {
+    fb.className = 'feedback wrong';
+    fb.innerHTML = `❌ Қате. Дұрыс жауап: <strong>${q.answer} ${q.unit}</strong>. ${q.explain}`;
+    lives--;
+    wrongCount++;
+    if (lives <= 0) { setTimeout(showResult, 1500); return; }
+  }
+  document.getElementById('task-next-btn').style.display = 'block';
+  updateHUD();
+}
+
+function nextQuestion() {
+  current++;
+  showQuestion();
+}
+
+function showResult() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-result').classList.add('active');
+  document.getElementById('result-score').textContent = score;
+  document.getElementById('r-correct').textContent = correctCount;
+  document.getElementById('r-wrong').textContent = wrongCount;
+  document.getElementById('r-level').textContent = Math.min(current, TOTAL) + '/' + TOTAL;
+
+  const pct = correctCount / Math.max(1, correctCount + wrongCount);
+  let emoji, title, msg;
+  if (pct >= 0.9) { emoji='🏆'; title='Керемет нәтиже!'; msg='Сіз магнит өрісі тақырыбын тамаша меңгердіңіз! Физикадан жоғары баға сізге тиесілі.'; }
+  else if (pct >= 0.7) { emoji='⭐'; title='Жақсы нәтиже!'; msg='Негізгі түсініктерді жақсы білесіз. Бірнеше тақырыпты қайталаңыз.'; }
+  else if (pct >= 0.5) { emoji='📚'; title='Орташа нәтиже'; msg='Магнит өрісі тақырыбын тереңірек оқу керек. Қайта байқап көріңіз!'; }
+  else { emoji='💪'; title='Тырысыңыз!'; msg='Теория бөлімін қайта оқып, ойынды қайта бастаңыз. Сіз міндетті түрде үйренесіз!'; }
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-msg').textContent = msg;
+  buildLevelBar();
+}
+
+function restartGame() { startGame(); }
+
+function showConfetti() {
+  const colors = ['#fbbf24','#34d399','#60a5fa','#f87171','#a78bfa'];
+  for (let i=0;i<18;i++) {
+    const el = document.createElement('div');
+    el.style.cssText = `position:fixed;width:8px;height:8px;border-radius:50%;background:${colors[i%5]};left:${30+Math.random()*40}%;top:30%;pointer-events:none;z-index:9999;animation:fall${i} 0.8s ease-out forwards;`;
+    document.body.appendChild(el);
+    const kf = document.createElement('style');
+    kf.textContent = `@keyframes fall${i}{to{transform:translate(${(Math.random()-.5)*200}px,${150+Math.random()*200}px) rotate(${Math.random()*360}deg);opacity:0;}}`;
+    document.head.appendChild(kf);
+    setTimeout(()=>{ el.remove(); kf.remove(); }, 900);
+  }
+}
+
+buildLevelBar();
+</script>
+</body>
+</html>
